@@ -14,7 +14,7 @@ customers_table = Table(
     Column("hashed_password", String()),
     Column("is_active",
         Boolean(),
-        server_default=sql.expression.true(),
+        server_default=sql.expression.false(),
         nullable=False,
     ),
 )

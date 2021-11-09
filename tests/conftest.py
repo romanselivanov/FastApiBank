@@ -19,7 +19,7 @@ def temp_db():
     create_database(database.TEST_SQLALCHEMY_DATABASE_URL) # Создаем БД
     base_dir = os.path.dirname(os.path.dirname(__file__))
     alembic_cfg = Config(os.path.join(base_dir, "alembic.ini")) # Загружаем конфигурацию alembic 
-    command.upgrade(alembic_cfg, "head") # выполняем миграции
+    command.upgrade(alembic_cfg, "1111111111@head") # выполняем миграции
 
     try:
         yield database.TEST_SQLALCHEMY_DATABASE_URL

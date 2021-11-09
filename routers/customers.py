@@ -1,15 +1,17 @@
 from typing import Any
-from fastapi import APIRouter, HTTPException, Depends
+from core.config import settings
+from fastapi import APIRouter, HTTPException, Depends, Body
 from schemas import schema
 from utils import customers as users_utils
 from fastapi.security import OAuth2PasswordRequestForm
 from core.auth import authenticate, create_access_token
-from core.security import password_valid
+from core.security import password_valid, get_password_hash
 from utils import deps
 from utils.mailutils import (
     generate_password_reset_token,
     send_reset_password_email,
-    # verify_password_reset_token,
+    verify_password_reset_token,
+    send_new_account_email,
 )
 
 
@@ -33,6 +35,12 @@ async def create_user(customer: schema.CustomerCreate):
             status_code=400, 
             detail="Пароль должен состоять не менее, чем из 8 знаков, "
             "содержать минимум одну заглавную букву и одну цифру")
+
+    # заготовка для: после регистрации пользователь должен подтвердить свою почту через 6 значный код
+    if settings.EMAILS_ENABLED and customer.email:
+        send_new_account_email(
+            email_to=customer.email, username=customer.first_name, password="555666"
+        )
     return await users_utils.create_user(user=customer)
 
 
@@ -60,7 +68,6 @@ def read_users_me(current_user: schema.User = Depends(deps.get_current_user)):
     return user
 
 
-# mail functions not tested yet
 # to enable mail dev server:
 # python -m smtpd -c DebuggingServer -n localhost:8025
 @router.post("/password-recovery/{email}", response_model=schema.Msg)
@@ -80,3 +87,25 @@ async def recover_password(email: str) -> Any:
         email_to=user.email, email=email, token=password_reset_token
     )
     return {"msg": "Password recovery email sent"}
+
+
+@router.post("/reset-password/", response_model=schema.Msg)
+async def reset_password(token: str = Body(...), new_password: str = Body(...), ) -> Any:
+    """
+    Reset password
+    """
+    email = verify_password_reset_token(token)
+    if not email:
+        raise HTTPException(status_code=400, detail="Invalid token")
+    user = await users_utils.get_user_by_phonemail(email=email, phone=None)
+    print(user)
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="The user with this username does not exist in the system.",
+        )
+    
+    hashed_password = get_password_hash(new_password)
+    print(hashed_password)
+    await users_utils.update_user_password(user.email, hashed_password)
+    return {"msg": "Password updated successfully"}

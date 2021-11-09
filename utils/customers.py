@@ -1,5 +1,4 @@
 from sqlalchemy import or_
-from typing import Optional
 from models.database import database
 from models.customers import customers_table
 from schemas import schema as user_schema
@@ -11,7 +10,6 @@ async def get_user_by_phonemail(email: str, phone: str):
     """ Возвращает информацию о пользователе """
     query = customers_table.select().where(or_(customers_table.c.email == email, customers_table.c.phone == phone))
     return await database.fetch_one(query)
-
 
 
 async def create_user(user: user_schema.CustomerCreate):
@@ -28,3 +26,9 @@ async def create_user(user: user_schema.CustomerCreate):
     user_id = await database.execute(query)  
     tokenhash = create_access_token(sub=user_id)
     return {**user.dict(), "id": user_id, "is_active": True, "token": tokenhash}
+
+
+async def update_user_password(email: str, hashed_password: str):
+    print(hashed_password)
+    query = customers_table.update().where(customers_table.c.email == email).values(hashed_password=hashed_password)
+    return await database.execute(query)

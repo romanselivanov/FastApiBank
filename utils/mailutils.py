@@ -10,10 +10,6 @@ from jose import jwt
 from core.config import settings
 
 
-"""
-переделать под текущий проект
-"""
-
 def send_email(
     email_to: str,
     subject_template: str = "",
@@ -38,23 +34,22 @@ def send_email(
     print(f"send email result: {response}")
 
 
-# def send_test_email(email_to: str) -> None:
-#     project_name = settings.PROJECT_NAME
-#     subject = f"{project_name} - Test email"
-#     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
-#         template_str = f.read()
-#     send_email(
-#         email_to=email_to,
-#         subject_template=subject,
-#         html_template=template_str,
-#         environment={"project_name": settings.PROJECT_NAME, "email": email_to},
-#     )
+def send_test_email(email_to: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - Test email"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "test_email.html") as f:
+        template_str = f.read()
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={"project_name": settings.PROJECT_NAME, "email": email_to},
+    )
 
 
 def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     project_name = settings.PROJECT_NAME
     subject = f"{project_name} - Восстановление пароля для пользователя {email}"
-    print(Path(settings.EMAIL_TEMPLATES_DIR))
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html") as f:
         template_str = f.read()
     server_host = settings.SERVER_HOST
@@ -73,24 +68,24 @@ def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     )
 
 
-# def send_new_account_email(email_to: str, username: str, password: str) -> None:
-#     project_name = settings.PROJECT_NAME
-#     subject = f"{project_name} - New account for user {username}"
-#     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
-#         template_str = f.read()
-#     link = settings.SERVER_HOST
-#     send_email(
-#         email_to=email_to,
-#         subject_template=subject,
-#         html_template=template_str,
-#         environment={
-#             "project_name": settings.PROJECT_NAME,
-#             "username": username,
-#             "password": password,
-#             "email": email_to,
-#             "link": link,
-#         },
-#     )
+def send_new_account_email(email_to: str, username: str, password: str) -> None:
+    project_name = settings.PROJECT_NAME
+    subject = f"{project_name} - New account for user {username}"
+    with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
+        template_str = f.read()
+    link = settings.SERVER_HOST
+    send_email(
+        email_to=email_to,
+        subject_template=subject,
+        html_template=template_str,
+        environment={
+            "project_name": settings.PROJECT_NAME,
+            "username": username,
+            "password": password,
+            "email": email_to,
+            "link": link,
+        },
+    )
 
 
 def generate_password_reset_token(email: str) -> str:
@@ -107,6 +102,7 @@ def generate_password_reset_token(email: str) -> str:
 def verify_password_reset_token(token: str) -> Optional[str]:
     try:
         decoded_token = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-        return decoded_token["email"]
+        print(decoded_token)
+        return decoded_token["sub"]
     except jwt.JWTError:
         return None

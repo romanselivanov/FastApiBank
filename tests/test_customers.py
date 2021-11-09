@@ -34,10 +34,25 @@ def test_login_with_invalid_password(temp_db):
     with TestClient(app) as client:
         response = client.post("/login", data=request_data)
     assert response.status_code == 400
-    assert response.json()["detail"] == "Incorrect email or password"
+    assert response.json()["detail"] == "Incorrect username or password"
 
 
 def test_user_detail_forbidden_without_token(temp_db):
     with TestClient(app) as client:
         response = client.get("/me")
     assert response.status_code == 401
+
+
+# def test_user_detail(temp_db):
+#     with TestClient(app) as client:
+#         # Create user token to see user info
+#         loop = asyncio.get_event_loop()
+#         token = loop.run_until_complete(create_user_token(user_id=1))
+#         response = client.get(
+#             "/me",
+#             headers={"Authorization": f"Bearer {token['token']}"}
+#         )
+#     assert response.status_code == 200
+#     assert response.json()["id"] == 1
+#     assert response.json()["email"] == "vader@deathstar.com"
+#     assert response.json()["name"] == "Darth"

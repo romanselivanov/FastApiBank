@@ -1,10 +1,9 @@
 from pydantic import AnyHttpUrl, BaseSettings, EmailStr, validator
 from typing import Any, Dict, List, Optional, Union
-import secrets
 
 
 class Settings(BaseSettings):
-    SECRET_KEY: str = secrets.token_urlsafe(32)
+    SECRET_KEY: str = "pkrLcCsRuKm-NxCiFLaho6WruPbgjSdlhh4WKbj2YcE"
     ALGORITHM: str = "HS256"
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
@@ -24,10 +23,11 @@ class Settings(BaseSettings):
 
     SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite:///example.db"
     TEST_SQLALCHEMY_DATABASE_URI: Optional[str] = "sqlite:///example_test.db"
-    FIRST_SUPERUSER: EmailStr = "admin@ihl.com"
+    FIRST_SUPERUSER: EmailStr = "admin@rt.com"
 
     PROJECT_NAME: str = "TestBank"
-
+    EMAILS_ENABLED: bool = False
+    
     SMTP_TLS: bool = False
     SMTP_PORT: Optional[int] = 8025
     SMTP_HOST: Optional[str] = "localhost"
@@ -44,7 +44,7 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     EMAIL_TEMPLATES_DIR: str = "utils/email-templates/build"
-    EMAILS_ENABLED: bool = False
+    
 
     @validator("EMAILS_ENABLED", pre=True)
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:
