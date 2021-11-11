@@ -16,8 +16,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/login")
 
 
 # для аутентификации используем email или пароль
-async def authenticate(email: str, password: str):
-    query = customers_table.select().where(or_(customers_table.c.email == email, customers_table.c.phone == email))
+async def authenticate(username: str, password: str):
+    query = customers_table.select().where(or_(customers_table.c.email == username, customers_table.c.phone == username))
     customer = await database.fetch_one(query)
     if not customer:
         return None

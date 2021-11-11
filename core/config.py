@@ -26,8 +26,7 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr = "admin@rt.com"
 
     PROJECT_NAME: str = "TestBank"
-    EMAILS_ENABLED: bool = False
-    
+
     SMTP_TLS: bool = False
     SMTP_PORT: Optional[int] = 8025
     SMTP_HOST: Optional[str] = "localhost"
@@ -44,7 +43,7 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
     EMAIL_TEMPLATES_DIR: str = "utils/email-templates/build"
-    
+    EMAILS_ENABLED: bool = True
 
     @validator("EMAILS_ENABLED", pre=True)
     def get_emails_enabled(cls, v: bool, values: Dict[str, Any]) -> bool:

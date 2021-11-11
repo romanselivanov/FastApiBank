@@ -1,14 +1,18 @@
-from sqlalchemy import or_
+from sqlalchemy import or_, sql
 from models.database import database
 from models.customers import customers_table
 from schemas import schema as user_schema
 from core.security import get_password_hash
 from core.auth import create_access_token
+from typing import Optional
 
 
-async def get_user_by_phonemail(email: str, phone: str):
+async def get_user_by_phonemail(email: str, phone: Optional[str] = None):
     """ Возвращает информацию о пользователе """
-    query = customers_table.select().where(or_(customers_table.c.email == email, customers_table.c.phone == phone))
+    if phone:
+        query = customers_table.select().where(or_(customers_table.c.email == email, customers_table.c.phone == phone))
+    else:
+        query = customers_table.select().where(or_(customers_table.c.email == email, customers_table.c.phone == email))
     return await database.fetch_one(query)
 
 
@@ -29,6 +33,10 @@ async def create_user(user: user_schema.CustomerCreate):
 
 
 async def update_user_password(email: str, hashed_password: str):
-    print(hashed_password)
     query = customers_table.update().where(customers_table.c.email == email).values(hashed_password=hashed_password)
+    return await database.execute(query)
+
+
+async def activate_customer_account(email: str):
+    query = customers_table.update().where(customers_table.c.email == email).values(is_active=sql.expression.true())
     return await database.execute(query)

@@ -36,10 +36,10 @@ async def create_user(customer: schema.CustomerCreate):
             detail="Пароль должен состоять не менее, чем из 8 знаков, "
             "содержать минимум одну заглавную букву и одну цифру")
 
-    # заготовка для: после регистрации пользователь должен подтвердить свою почту через 6 значный код
     if settings.EMAILS_ENABLED and customer.email:
+        token = generate_password_reset_token(email=customer.email)
         send_new_account_email(
-            email_to=customer.email, username=customer.first_name, password="555666"
+            email_to=customer.email, username=customer.first_name, token=token
         )
     return await users_utils.create_user(user=customer)
 
@@ -49,7 +49,7 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Get the JWT for a user with data from OAuth2 request form body.
     """
-    user = await authenticate(email=form_data.username, password=form_data.password)
+    user = await authenticate(username=form_data.username, password=form_data.password)
     if not user:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
     return {
@@ -68,6 +68,22 @@ def read_users_me(current_user: schema.User = Depends(deps.get_current_user)):
     return user
 
 
+@router.get("/veryfy-account", response_model=schema.Msg)
+async def veryfy_account(token: str) -> Any:
+    """
+    account verify after registration
+    """
+    email = verify_password_reset_token(token)
+    success = await users_utils.activate_customer_account(email=email)
+    if success:
+        return {"msg": "Your account veryfied"}
+    else:        
+        raise HTTPException(
+            status_code=404,
+            detail="Something went wrong, try again later",)
+
+
+
 # to enable mail dev server:
 # python -m smtpd -c DebuggingServer -n localhost:8025
 @router.post("/password-recovery/{email}", response_model=schema.Msg)
@@ -75,7 +91,7 @@ async def recover_password(email: str) -> Any:
     """
     Password Recovery
     """
-    user = await users_utils.get_user_by_phonemail(email=email, phone=None)
+    user = await users_utils.get_user_by_phonemail(email=email)
     if not user:
         raise HTTPException(
             status_code=404,
