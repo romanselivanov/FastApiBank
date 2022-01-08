@@ -53,7 +53,7 @@ def send_reset_password_email(email_to: str, email: str, token: str) -> None:
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "reset_password.html") as f:
         template_str = f.read()
     server_host = settings.SERVER_HOST
-    link = f"{server_host}/reset-password?token={token}"
+    link = f"{server_host}/auth/reset-password?token={token}"
     send_email(
         email_to=email_to,
         subject_template=subject,
@@ -74,7 +74,7 @@ def send_new_account_email(email_to: str, username: str, token: str) -> None:
     with open(Path(settings.EMAIL_TEMPLATES_DIR) / "new_account.html") as f:
         template_str = f.read()
     server_host = settings.SERVER_HOST
-    link = f"{server_host}/veryfy-account?token={token}"
+    link = f"{server_host}/auth/veryfy-account?token={token}"
     send_email(
         email_to=email_to,
         subject_template=subject,

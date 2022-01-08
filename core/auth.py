@@ -17,7 +17,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"/login")
 
 # для аутентификации используем email или пароль
 async def authenticate(username: str, password: str):
-    query = customers_table.select().where(or_(customers_table.c.email == username, customers_table.c.phone == username))
+    query = customers_table.select().where(
+        or_(customers_table.c.email == username, customers_table.c.phone == username)
+        )
     customer = await database.fetch_one(query)
     if not customer:
         return None
@@ -26,19 +28,15 @@ async def authenticate(username: str, password: str):
     return customer
 
 
-def create_access_token(*, sub: str) -> str:  # 2
+async def create_access_token(sub: str) -> str:  # 2
     return _create_token(
         token_type="access_token",
-        lifetime=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),  # 3
+        lifetime=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
         sub=sub,
     )
 
 
-def _create_token(
-    token_type: str,
-    lifetime: timedelta,
-    sub: str,
-) -> str:
+def _create_token(token_type: str, lifetime: timedelta, sub: str) -> str:
     payload = {}
     expire = datetime.utcnow() + lifetime
     payload["type"] = token_type
@@ -46,4 +44,4 @@ def _create_token(
     payload["iat"] = datetime.utcnow()  # 5
     payload["sub"] = str(sub)  # 6
 
-    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)  # 8
+    return jwt.encode(payload, settings.SECRET_KEY, algorithm=settings.ALGORITHM)

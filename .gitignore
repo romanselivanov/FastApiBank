@@ -4,3 +4,4 @@ __pycache__
 .pytest_cache
 example.db
 example_test.db
+.vscode

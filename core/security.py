@@ -1,11 +1,10 @@
 import re
 from datetime import datetime, timedelta
 from typing import Any, Union
-
 from jose import jwt
 from passlib.context import CryptContext
-
 from core.config import settings
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -13,9 +12,9 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 ALGORITHM = "HS256"
 
 
-def password_valid(passwd):
+async def password_valid(passwd):
     reg = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,40}$"
-    pat = re.compile(reg)     
+    pat = re.compile(reg)
     mat = re.search(pat, passwd)
 
     if mat:
@@ -24,7 +23,7 @@ def password_valid(passwd):
         return None
 
 
-def create_access_token(
+async def create_access_token(
     subject: Union[str, Any], expires_delta: timedelta = None
 ) -> str:
     if expires_delta:

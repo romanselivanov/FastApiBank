@@ -1,7 +1,7 @@
 from main import app
 from fastapi.testclient import TestClient
-import asyncio
 from core.auth import create_access_token
+import asyncio
 
 
 def test_sign_up(temp_db):
@@ -14,7 +14,7 @@ def test_sign_up(temp_db):
         "password": "TestPass340"
     }
     with TestClient(app) as client:
-        response = client.post("/sign-up", json=request_data)
+        response = client.post("/auth/sign-up", json=request_data)
     assert response.status_code == 200
     assert response.json()["id"] == 1
     assert response.json()["email"] == "dow@ex.com"
@@ -25,7 +25,7 @@ def test_sign_up(temp_db):
 def test_login(temp_db):
     request_data = {"username": "dow@ex.com", "password": "TestPass340"}
     with TestClient(app) as client:
-        response = client.post("/login", data=request_data)
+        response = client.post("/auth/login", data=request_data)
     assert response.status_code == 200
     assert response.json()["token_type"] == "bearer"
     assert response.json()["access_token"] is not None
@@ -34,7 +34,7 @@ def test_login(temp_db):
 def test_login_with_invalid_password(temp_db):
     request_data = {"username": "dow@ex.com", "password": "unicorn"}
     with TestClient(app) as client:
-        response = client.post("/login", data=request_data)
+        response = client.post("/auth/login", data=request_data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Incorrect username or password"
 
@@ -48,11 +48,11 @@ def test_user_detail_forbidden_without_token(temp_db):
 def test_user_detail(temp_db):
     with TestClient(app) as client:
         # Create user token to see user info
-        token = create_access_token(sub=1)
+        token = asyncio.run(create_access_token(sub=1))
         headers = {"Authorization": f"Bearer {token}"}
         response = client.get(
             "/me",
-            headers = headers,
+            headers=headers,
         )
     assert response.status_code == 200
     assert response.json()["id"] == 1

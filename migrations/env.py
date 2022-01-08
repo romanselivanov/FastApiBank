@@ -17,9 +17,15 @@ config = context.config
 
 section = config.config_ini_section
 if TESTING:
-    config.set_section_option(section, "sqlalchemy.url", settings.TEST_SQLALCHEMY_DATABASE_URI)
+    config.set_section_option(
+        section, "sqlalchemy.url",
+        settings.TEST_SQLALCHEMY_DATABASE_URI
+        )
 else:
-    config.set_section_option(section, "sqlalchemy.url", settings.SQLALCHEMY_DATABASE_URI)
+    config.set_section_option(
+        section, "sqlalchemy.url",
+        settings.SQLALCHEMY_DATABASE_URI
+        )
 
 
 target_metadata = [customers.metadata, accounttype.metadata, accounts.metadata]

@@ -23,16 +23,18 @@ async def read_root():
     return {"Hello": "World"}
 
 
-@router.post("/sign-up", response_model=schema.Customer)
+@router.post("/auth/sign-up", response_model=schema.Customer)
 async def create_user(customer: schema.CustomerCreate):
     """ create new customer """
-    db_user = await users_utils.get_user_by_phonemail(email=customer.email, phone=customer.phone)
+    db_user = await users_utils.get_user_by_phonemail(
+        email=customer.email, phone=customer.phone
+        )
     if db_user:
         raise HTTPException(status_code=400, detail="Email or phone already registered")
     passwdvalid = password_valid(passwd=customer.password)
     if not passwdvalid:
         raise HTTPException(
-            status_code=400, 
+            status_code=400,
             detail="Пароль должен состоять не менее, чем из 8 знаков, "
             "содержать минимум одну заглавную букву и одну цифру")
 
@@ -44,22 +46,28 @@ async def create_user(customer: schema.CustomerCreate):
     return await users_utils.create_user(user=customer)
 
 
-@router.post("/login")
+@router.post("/auth/login")
 async def login(form_data: OAuth2PasswordRequestForm = Depends()):
     """
     Get the JWT for a user with data from OAuth2 request form body.
     """
-    user = await authenticate(username=form_data.username, password=form_data.password)
+    user = await authenticate(
+        username=form_data.username,
+        password=form_data.password
+        )
     if not user:
-        raise HTTPException(status_code=400, detail="Incorrect username or password")
+        raise HTTPException(
+            status_code=400,
+            detail="Incorrect username or password"
+            )
     return {
-        "access_token": create_access_token(sub=user.id),
+        "access_token": await create_access_token(sub=user.id),
         "token_type": "bearer",
     }
 
 
 @router.get("/me", response_model=schema.User)
-def read_users_me(current_user: schema.User = Depends(deps.get_current_user)):
+async def read_users_me(current_user: schema.User = Depends(deps.get_current_user)):
     """
     Fetch the current logged in user.
     """
@@ -68,7 +76,7 @@ def read_users_me(current_user: schema.User = Depends(deps.get_current_user)):
     return user
 
 
-@router.get("/veryfy-account", response_model=schema.Msg)
+@router.get("/auth/veryfy-account", response_model=schema.Msg)
 async def veryfy_account(token: str) -> Any:
     """
     account verify after registration
@@ -83,10 +91,9 @@ async def veryfy_account(token: str) -> Any:
             detail="Something went wrong, try again later",)
 
 
-
 # to enable mail dev server:
 # python -m smtpd -c DebuggingServer -n localhost:8025
-@router.post("/password-recovery/{email}", response_model=schema.Msg)
+@router.post("/auth/password-recovery/{email}", response_model=schema.Msg)
 async def recover_password(email: str) -> Any:
     """
     Password Recovery
@@ -105,7 +112,7 @@ async def recover_password(email: str) -> Any:
     return {"msg": "Password recovery email sent"}
 
 
-@router.post("/reset-password/", response_model=schema.Msg)
+@router.post("/auth/reset-password/", response_model=schema.Msg)
 async def reset_password(token: str = Body(...), new_password: str = Body(...), ) -> Any:
     """
     Reset password
@@ -120,7 +127,7 @@ async def reset_password(token: str = Body(...), new_password: str = Body(...), 
             status_code=404,
             detail="The user with this username does not exist in the system.",
         )
-    
+
     hashed_password = get_password_hash(new_password)
     print(hashed_password)
     await users_utils.update_user_password(user.email, hashed_password)

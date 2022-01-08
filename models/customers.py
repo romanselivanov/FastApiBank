@@ -12,7 +12,8 @@ customers_table = Table(
     Column("last_name", String(100)),
     Column("patronymic", String(100)),
     Column("hashed_password", String()),
-    Column("is_active",
+    Column(
+        "is_active",
         Boolean(),
         server_default=sql.expression.false(),
         nullable=False,

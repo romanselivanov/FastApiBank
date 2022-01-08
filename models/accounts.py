@@ -13,7 +13,8 @@ accounts_table = Table(
     Column("created_at", DateTime()),
     Column("rate", Float()),
     Column("type", ForeignKey(accounttypes_table.c.id)),
-    Column("is_active",
+    Column(
+        "is_active",
         Boolean(),
         server_default=sql.expression.true(),
         nullable=False,

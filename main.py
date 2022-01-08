@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter
 import uvicorn
 from starlette.middleware.cors import CORSMiddleware
 from models.database import database
-from routers import customers, dnarout
+from routers import customers
 from core.config import settings
 
 
@@ -31,7 +31,6 @@ if settings.BACKEND_CORS_ORIGINS:
     )
 
 app.include_router(customers.router)
-app.include_router(dnarout.router)
 
 if __name__ == '__main__':
     uvicorn.run(app, port=8000, host='0.0.0.0')
